@@ -1,3 +1,4 @@
 # requirements.txt reset to empty
 requests
 python-dotenv
+Pillow
