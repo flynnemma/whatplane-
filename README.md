@@ -28,5 +28,5 @@ A Python Tkinter app that shows real-time flight information overhead for a spec
 - This app uses an unofficial Flightradar24 API and may be rate-limited.
 - On macOS, Tkinter UI may be blank due to system Tk issues. Use python.org Python for best results.
 
-Inline-style: 
-![alt text](https://github.com/flynnemma/whatplane-/raw/master/images/example_whatplane.png "Logo Title Text 1")
+Example: 
+![alt text](https://github.com/flynnemma/whatplane-/blob/main/images/example_whatplane.png "example")
