@@ -16,7 +16,7 @@ A Python Tkinter app that shows real-time flight information overhead for a spec
    ```
 4. Set your bounding box in `.env`:
    ```
-   BOUNDS_BOX=53.5,53.3,-6.3,-6.0
+   BOUNDS_BOX=64.5,64.3,-5.3,-5.0
    ```
 5. Run the app:
    ```
