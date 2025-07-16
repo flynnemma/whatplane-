@@ -77,6 +77,9 @@ def format_flight_info(flight, details):
             dest = details.get("airport", {}).get("destination", {}).get("name", "")
             info.append(f"From: {origin}")
             info.append(f"To: {dest}")
+            airline = details.get("airline", {}).get("name", "")
+            if airline:
+                info.append(f"Airline: {airline}")
         except Exception:
             pass
     return "\n".join(info)
@@ -87,10 +90,70 @@ class FlightApp(tk.Tk):
         super().__init__()
         print("Tk root initialized.")
         self.title("whatplane?")
-        self.geometry("800x480")  # 7" Pi touchscreen
-        self.configure(bg="#222244")
-        self.label = tk.Label(self, text="Loading...", font=("Arial", 32), fg="#FFA500", bg="#222244", justify="left")
-        self.label.pack(expand=True, fill="both")
+        self.attributes("-fullscreen", True)
+        # self.geometry("800x480")  # 7" Pi touchscreen (now fullscreen)
+        self.configure(bg="#181828")
+        # --- Neon Light + Drop Shadow Effect ---
+        # Shadow label (dark, slightly offset)
+        self.shadow = tk.Label(
+            self,
+            text="Loading...",
+            font=("Segoe UI", 38, "bold"),
+            fg="#0a0a0a",
+            bg="#181828",
+            justify="left",
+            anchor="center",
+            padx=40,
+            pady=40,
+            borderwidth=0,
+            highlightthickness=0
+        )
+        self.shadow.place(relx=0.5, rely=0.5, anchor="center", x=4, y=4)
+        # Neon glow label (bright, slightly offset)
+        self.glow = tk.Label(
+            self,
+            text="Loading...",
+            font=("Segoe UI", 38, "bold"),
+            fg="#00ffe7",
+            bg="#181828",
+            justify="left",
+            anchor="center",
+            padx=40,
+            pady=40,
+            borderwidth=0,
+            highlightthickness=0
+        )
+        self.glow.place(relx=0.5, rely=0.5, anchor="center", x=2, y=2)
+        # Main label (on top)
+        self.label = tk.Label(
+            self,
+            text="Loading...",
+            font=("Segoe UI", 38, "bold"),
+            fg="#00ffe7",
+            bg="#181828",
+            justify="left",
+            anchor="center",
+            padx=40,
+            pady=40,
+            borderwidth=0,
+            highlightthickness=0
+        )
+        self.label.pack(expand=True, fill="both", padx=30, pady=30)
+        self.label.lift()
+        # Add a subtle bottom bar for branding (neon accent)
+        self.footer = tk.Label(
+            self,
+            text="✈ whatplane?",
+            font=("Segoe UI", 20, "italic"),
+            fg="#00ffe7",
+            bg="#101018",
+            anchor="e",
+            padx=25,
+            pady=10,
+            borderwidth=0,
+            highlightthickness=0
+        )
+        self.footer.pack(side="bottom", fill="x")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.running = True
         print("Scheduling update thread...")
@@ -103,6 +166,9 @@ class FlightApp(tk.Tk):
             details = get_flight_details(flight["id"] if flight else None)
             info = format_flight_info(flight, details)
             print(info)
+            # Update all labels for neon+shadow effect
+            self.after(0, lambda: self.shadow.config(text=info))
+            self.after(0, lambda: self.glow.config(text=info))
             self.after(0, lambda: self.label.config(text=info))
             for _ in range(QUERY_DELAY):
                 if not self.running:
