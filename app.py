@@ -91,37 +91,6 @@ class FlightApp(tk.Tk):
         self.attributes("-fullscreen", True)
         # self.geometry("800x480")  # 7" Pi touchscreen (now fullscreen)
         self.configure(bg="#181828")
-        # --- Neon Light + Drop Shadow Effect ---
-        # Shadow label (dark, slightly offset)
-        self.shadow = tk.Label(
-            self,
-            text="Loading...",
-            font=("Segoe UI", 34, "bold"),
-            fg="#0a0a0a",
-            bg="#181828",
-            justify="left",
-            anchor="center",
-            padx=40,
-            pady=40,
-            borderwidth=0,
-            highlightthickness=0
-        )
-        self.shadow.place(relx=0.5, rely=0.5, anchor="center", x=4, y=4)
-        # Neon glow label (bright, slightly offset)
-        self.glow = tk.Label(
-            self,
-            text="Loading...",
-            font=("Segoe UI", 34, "bold"),
-            fg="#00ffe7",
-            bg="#181828",
-            justify="left",
-            anchor="center",
-            padx=40,
-            pady=40,
-            borderwidth=0,
-            highlightthickness=0
-        )
-        self.glow.place(relx=0.5, rely=0.5, anchor="center", x=2, y=2)
         # --- Main content frame for side-by-side layout ---
         self.content_frame = tk.Frame(self, bg="#181828")
         self.content_frame.pack(expand=True, fill="both", padx=20, pady=20)
@@ -188,9 +157,6 @@ class FlightApp(tk.Tk):
                     f"{title}: {detail}" if title else detail
                     for title, detail in colored_info
                 ])
-            # For shadow and glow, keep original color
-            self.after(0, lambda: self.shadow.config(text=make_colored_text(colored_info, "#0a0a0a", "#0a0a0a")))
-            self.after(0, lambda: self.glow.config(text=make_colored_text(colored_info, "#00ffe7", "#00ffe7")))
             # For main label, colorize titles
             # To color titles, use tk.Text widget instead of tk.Label
             # But for now, set all text, then try to colorize titles if possible
@@ -219,32 +185,37 @@ class FlightApp(tk.Tk):
                         else:
                             self.image_label.configure(image=None, text="No image", fg="red")
                             self.image_label.image = None
-                        # Always (re)pack the image_label to ensure visibility
                         self.image_label.pack_forget()
                         self.image_label.pack(side="top", pady=(10, 10), anchor="nw")
                         self.image_label.lift()
+                        # --- Clear all info widgets except image_label ---
+                        for widget in self.text_frame.winfo_children():
+                            if widget != self.image_label:
+                                widget.destroy()
+                        try:
+                            text_widget = tk.Text(self.text_frame, font=("Segoe UI", 18, "bold"), fg="#00ffe7", bg="#181828", height=10, borderwidth=0, highlightthickness=0, wrap="word")
+                            text_widget.tag_configure("title", foreground="#ffae00")
+                            text_widget.tag_configure("detail", foreground="#00ffe7")
+                            for title, detail in colored_info:
+                                if title:
+                                    text_widget.insert("end", f"{title}: ", "title")
+                                    text_widget.insert("end", f"{detail}\n", "detail")
+                                else:
+                                    text_widget.insert("end", f"{detail}\n", "detail")
+                            text_widget.config(state="disabled")
+                            text_widget.pack(expand=True, fill="both")
+                        except Exception as e:
+                            for widget in self.text_frame.winfo_children():
+                                if widget != self.image_label:
+                                    widget.destroy()
+                            fallback = tk.Label(self.text_frame, text=make_colored_text(colored_info), font=("Segoe UI", 34, "bold"), fg="#00ffe7", bg="#181828", justify="left")
+                            fallback.pack(expand=True, fill="both")
                     else:
-                        self.image_label.configure(image=None, text="No image", fg="red")
-                        self.image_label.image = None
-                        # Always (re)pack the image_label to ensure visibility
+                        # No flight: clear info area, hide image
                         self.image_label.pack_forget()
-                        self.image_label.pack(side="top", pady=(10, 10), anchor="nw")
-                        self.image_label.lift()
-                    # Replace label with tk.Text for coloring, in text_frame
-                    for widget in self.text_frame.winfo_children():
-                        if widget != self.image_label:
-                            widget.destroy()
-                    text_widget = tk.Text(self.text_frame, font=("Segoe UI", 18, "bold"), fg="#00ffe7", bg="#181828", height=10, borderwidth=0, highlightthickness=0, wrap="word")
-                    text_widget.tag_configure("title", foreground="#ffae00")
-                    text_widget.tag_configure("detail", foreground="#00ffe7")
-                    for title, detail in colored_info:
-                        if title:
-                            text_widget.insert("end", f"{title}: ", "title")
-                            text_widget.insert("end", f"{detail}\n", "detail")
-                        else:
-                            text_widget.insert("end", f"{detail}\n", "detail")
-                    text_widget.config(state="disabled")
-                    text_widget.pack(expand=True, fill="both")
+                        for widget in self.text_frame.winfo_children():
+                            if widget != self.image_label:
+                                widget.destroy()
                 except Exception as e:
                     for widget in self.text_frame.winfo_children():
                         if widget != self.image_label:
