@@ -216,6 +216,18 @@ class FlightApp(tk.Tk):
                         for widget in self.text_frame.winfo_children():
                             if widget != self.image_label:
                                 widget.destroy()
+                        # --- Improved fallback: show a modern, minimal message ---
+                        fallback = tk.Label(
+                            self.text_frame,
+                            text="No flights found overhead.",
+                            font=("Segoe UI", 28, "bold"),
+                            fg="#8888ff",
+                            bg="#181828",
+                            justify="center",
+                            padx=30,
+                            pady=30
+                        )
+                        fallback.pack(expand=True, fill="both")
                 except Exception as e:
                     for widget in self.text_frame.winfo_children():
                         if widget != self.image_label:
