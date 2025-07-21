@@ -7,6 +7,10 @@ import time
 import threading
 from PIL import Image, ImageTk
 import io
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Load environment variables from .env
 load_dotenv()
@@ -43,8 +47,19 @@ def get_flights():
                     'flight': v[13] if len(v) > 13 else '',
                     'reg': v[9] if len(v) > 9 else ''
                 })
+        logging.info(f"Found {len(flights)} flights")
         return flights[0] if flights else None
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"HTTP error fetching flights: {e}")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        logging.error(f"Connection error fetching flights: {e}")
+        return None
+    except requests.exceptions.Timeout as e:
+        logging.error(f"Timeout error fetching flights: {e}")
+        return None
     except Exception as e:
+        logging.error(f"Error fetching flights: {e}")
         return None
 
 def get_flight_details(flight_id):
@@ -54,6 +69,7 @@ def get_flight_details(flight_id):
         response.raise_for_status()
         return response.json()
     except Exception as e:
+        logging.error(f"Error fetching flight details: {e}")
         return None
 
 def format_flight_info(flight, details):
@@ -128,8 +144,12 @@ class FlightApp(tk.Tk):
     def update_loop(self):
         while self.running:
             flight = get_flights()
-            details = get_flight_details(flight["id"] if flight else None)
-            info = format_flight_info(flight, details)
+            details = None
+            if flight is not None:
+                details = get_flight_details(flight["id"])
+                info = format_flight_info(flight, details)
+            else:
+                info = format_flight_info(flight, None)
             # Update all labels for neon+shadow effect
             # Custom: parse info and colorize titles
             def colorize(text, title_color="#ffae00", detail_color="#00ffe7"):
@@ -163,7 +183,7 @@ class FlightApp(tk.Tk):
             def update_main_label():
                 try:
                     # --- Plane Image ---
-                    if details:
+                    if flight is not None and details:
                         img_url = None
                         try:
                             img_url = details.get("aircraft", {}).get("images", {}).get("large", [{}])[0].get("src")
